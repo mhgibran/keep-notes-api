@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       title: DataTypes.STRING,
       note: DataTypes.TEXT,
+      archivedAt: DataTypes.DATE,
     },
     {
       sequelize,

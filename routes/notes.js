@@ -5,16 +5,22 @@ const { notes } = require("../models");
 const { Op } = require("sequelize");
 
 router.get("/", async function (req, res) {
-  const data = await notes.findAll();
+  const data = await notes.findAll({
+    order: [["createdAt", "desc"]],
+    where: {
+      archivedAt: {
+        [Op.is]: null,
+      },
+    },
+  });
 
   return res.status(200).json({
     data: data,
   });
 });
 
-router.get("/:id", async function (req, res) {
+router.get("/show/:id", async function (req, res) {
   const data = await notes.findOne({ where: { id: req.params.id } });
-
   return res.status(200).json({
     data: data,
   });
@@ -90,6 +96,81 @@ router.put("/:id", async function (req, res) {
 router.delete("/:id", async function (req, res) {
   try {
     await notes.destroy({ where: { id: req.params.id } });
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      errors: error,
+    });
+  }
+});
+
+router.get("/archived", async function (req, res) {
+  const data = await notes.findAll({
+    where: {
+      archivedAt: {
+        [Op.not]: null,
+      },
+    },
+  });
+
+  return res.status(200).json({
+    data: data,
+  });
+});
+
+router.post("/archived/:id", async function (req, res) {
+  try {
+    await notes.update(
+      { archivedAt: new Date() },
+      { where: { id: req.params.id } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      errors: error,
+    });
+  }
+});
+
+router.post("/unarchived/:id", async function (req, res) {
+  try {
+    if (req.params.id === "all") {
+      await notes.update(
+        {
+          archivedAt: null,
+        },
+        {
+          where: {
+            archivedAt: {
+              [Op.not]: null,
+            },
+          },
+        }
+      );
+    } else {
+      await notes.update(
+        {
+          archivedAt: null,
+        },
+        {
+          where: {
+            id: req.params.id,
+          },
+        }
+      );
+    }
 
     return res.status(200).json({
       success: true,

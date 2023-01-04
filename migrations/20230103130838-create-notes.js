@@ -21,6 +21,9 @@ module.exports = {
       updatedAt: {
         type: Sequelize.DATE,
       },
+      archivedAt: {
+        type: Sequelize.DATE,
+      },
       deletedAt: {
         type: Sequelize.DATE,
       },
